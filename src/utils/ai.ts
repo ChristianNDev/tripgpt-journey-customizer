@@ -11,7 +11,7 @@ export const generateAIResponse = async (userMessage: string) => {
         Authorization: `Bearer ${import.meta.env.VITE_OPENAI_API_KEY}`,
       },
       body: JSON.stringify({
-        model: "gpt-4o",
+        model: "gpt-4",
         messages: [
           {
             role: "system",
@@ -33,6 +33,6 @@ export const generateAIResponse = async (userMessage: string) => {
     return data.choices[0].message.content;
   } catch (error) {
     console.error("Error generating AI response:", error);
-    return "I apologize, but I'm having trouble processing your request right now. Please try again in a moment.";
+    throw error;
   }
 };
