@@ -1,11 +1,14 @@
 import { useState } from "react";
 import { Send, Loader2 } from "lucide-react";
 import { motion, AnimatePresence } from "framer-motion";
+import { generateAIResponse } from "../utils/ai";
+import { useToast } from "@/components/ui/use-toast";
 
 export const ChatInterface = () => {
   const [messages, setMessages] = useState<Array<{ text: string; isUser: boolean }>>([]);
   const [input, setInput] = useState("");
   const [isLoading, setIsLoading] = useState(false);
+  const { toast } = useToast();
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -16,15 +19,26 @@ export const ChatInterface = () => {
     setInput("");
     setIsLoading(true);
 
-    // Simulate AI response
-    setTimeout(() => {
+    try {
+      console.log("Sending message to AI:", input);
+      const aiResponseText = await generateAIResponse(input);
+      
       const aiResponse = {
-        text: "I'll help you plan the perfect trip based on your preferences. Could you tell me more about your ideal destination and travel style?",
+        text: aiResponseText,
         isUser: false,
       };
+      
       setMessages((prev) => [...prev, aiResponse]);
+    } catch (error) {
+      console.error("Error in chat:", error);
+      toast({
+        title: "Error",
+        description: "Failed to get a response. Please try again.",
+        variant: "destructive",
+      });
+    } finally {
       setIsLoading(false);
-    }, 1000);
+    }
   };
 
   return (
@@ -58,7 +72,7 @@ export const ChatInterface = () => {
                 className="flex items-center space-x-2 text-gray-500"
               >
                 <Loader2 className="w-4 h-4 animate-spin" />
-                <span>Thinking...</span>
+                <span>Thinking about your perfect trip...</span>
               </motion.div>
             )}
           </AnimatePresence>
@@ -71,10 +85,11 @@ export const ChatInterface = () => {
             onChange={(e) => setInput(e.target.value)}
             placeholder="Tell me about your dream vacation..."
             className="flex-1 px-4 py-2 rounded-lg border border-gray-200 focus:outline-none focus:ring-2 focus:ring-primary/50"
+            disabled={isLoading}
           />
           <button
             type="submit"
-            className="px-4 py-2 bg-primary text-white rounded-lg hover:bg-primary/90 transition-colors"
+            className="px-4 py-2 bg-primary text-white rounded-lg hover:bg-primary/90 transition-colors disabled:opacity-50"
             disabled={isLoading}
           >
             <Send className="w-5 h-5" />
